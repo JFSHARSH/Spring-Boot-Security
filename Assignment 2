@@ -1,0 +1,165 @@
+Main class
+package com.learn.modals;
+
+import org.springframework.data.mongodb.core.mapping.Document;
+@Document(collection="details")
+public class User {
+	private String username;
+	private String password;
+	private String email;
+	public User(String username, String password, String email) {
+		super();
+		this.username = username;
+		this.password = password;
+		this.email = email;
+	}
+	
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	
+}
+
+Service class
+package com.learn.services;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.learn.modals.User;
+
+@Service
+public class UserService {
+	List<User> list=new ArrayList<>();
+
+		public UserService()
+		{
+
+			list.add(new User("abc","abc","abc@gmail.com"));
+			list.add(new User("xyz","xyz","xyz@gmail.com"));
+			
+		}
+		
+	public List<User> showall()
+	{
+		return this.list;
+	}
+	
+	public User finduser(String username)
+	{
+		return this.list.stream().filter((user)->user.getUsername().equals(username)).findAny().orElse(null);
+	}
+	
+	public User adduser(User user)
+	{
+		this.list.add(user);
+		return user;
+	}
+
+}
+
+Controller class
+package com.learn.Controllers;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.learn.modals.User;
+import com.learn.services.UserService;
+
+@RestController
+@RequestMapping("/users")
+public class MyController {
+	
+	@Autowired
+	private UserService userservice;
+	
+	@GetMapping("/")
+	public List<User>get()
+	{
+		return this.userservice.showall();
+	}
+	
+	@GetMapping("/{username}")
+	public User get(@PathVariable("username") String username)
+	{
+		return this.userservice.finduser(username);
+	}
+	
+	@PostMapping("/")
+	public User add(@RequestBody User user)
+	{
+		return this.userservice.adduser(user);
+	}
+	
+}
+
+Security class
+package com.learn.config;
+
+
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+@Configuration
+@EnableWebSecurity
+public class MySecurityConfig extends WebSecurityConfigurerAdapter {
+	@Override
+	protected void configure(HttpSecurity http) throws Exception{
+		http
+			.authorizeRequests()
+			.antMatchers("/public/**").hasRole("Normal")
+		    .antMatchers("/users/**").hasRole("Admin") 
+			.anyRequest()
+			.authenticated()
+			.and()
+			.formLogin();
+			
+		
+	}
+	@Override
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception{
+	auth.inMemoryAuthentication().withUser("Harsh").password("Harsh@1998").roles("Admin");
+	auth.inMemoryAuthentication().withUser("Tejas").password("123456789").roles("Normal");
+	
+	}
+	
+	@Bean
+	public PasswordEncoder passwordencoder()
+	{
+		return NoOpPasswordEncoder.getInstance();
+	}
+	
+
+}
