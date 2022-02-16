@@ -1,0 +1,49 @@
+In Main Class
+package com.assignment.main;
+
+public class Hello {
+
+	private String a;
+
+	public Hello(String a) {
+		super();
+		this.a = a;
+	}
+
+	public String getA() {
+		return a;
+	}
+
+	public void setA(String a) {
+		this.a = a;
+	}
+	
+}
+
+
+In Controller Class
+
+package com.assignment.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.assignment.service.MyService;
+
+@RestController
+@RequestMapping("/home")
+public class MyController {
+	
+	//@Autowired
+	//private MyService myservice;
+	
+	@RequestMapping("/")
+	public String getpage()
+	{
+		return "Hello world";
+	}
+	
+	
+
+}
